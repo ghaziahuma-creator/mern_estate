@@ -1,7 +1,7 @@
 import {useSelector} from 'react-redux'
 import { useRef, useState } from 'react'
 import axios from "axios";
- import {updateUserFailure, updateUserStart, updateUserSuccess} from '../redux/user/userSlice'
+ import {deleteUserFailure, deleteUserStart, deleteUserSuccess, updateUserFailure, updateUserStart, updateUserSuccess} from '../redux/user/userSlice'
  import { useDispatch } from 'react-redux';
 
 // cloudinary.v2.config({
@@ -85,6 +85,25 @@ export default function Profile() {
       dispatch(updateUserFailure(error.message));
     }
   }
+  const handleDeleteUser = async ()=>{
+    try{
+     dispatch(deleteUserStart());
+     const res = await fetch(`/api/user/delete/${currentUser._id}`,
+      {
+        method:'DELETE',
+      }
+     );
+     const data= await res.json();
+     if(data.success === false){
+      dispatch(deleteUserFailure(data.message));
+      return;
+     }
+     dispatch(deleteUserSuccess(data));
+    }catch(error){
+      dispatch(deleteUserFailure(error.message))
+  }
+
+  }
   return (
    <div className='p-3 max-w-lg mx-auto'>
     <h1 className='text-3xl font-semibold text-center my-7'>
@@ -101,7 +120,7 @@ export default function Profile() {
     </button>
    </form>
    <div className='flex justify-between mt-5'>
-     <span className='text-red-700 cursor-pointer'>Delete account</span>
+     <span onClick={handleDeleteUser} className='text-red-700 cursor-pointer'>Delete account</span>
      <span className='text-red-700 cursor-pointer'>Sign Out</span>
    </div>
    <p className='text-red-700 mt-5'>{error ? error: ''}</p>
