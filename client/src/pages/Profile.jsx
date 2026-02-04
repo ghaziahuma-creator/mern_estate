@@ -1,6 +1,8 @@
 import {useSelector} from 'react-redux'
 import { useRef, useState } from 'react'
 import axios from "axios";
+ import {updateUserFailure, updateUserStart, updateUserSuccess} from '../redux/user/userSlice'
+ import { useDispatch } from 'react-redux';
 
 // cloudinary.v2.config({
 //   cloud_name: 'durevuy5x',
@@ -11,10 +13,12 @@ import axios from "axios";
 
 export default function Profile() {
   const fileRef= useRef(null);
-  const {currentUser} = useSelector((state)=>state.user)
+  const {currentUser, loading, error} = useSelector((state)=>state.user)
   const [avatar, setAvatar] = useState(currentUser.avatar);
   const [formData, setFormData] = useState({});
-console.log(formData);
+  const [updateSuccess, setUpdateSuccess]=useState(false);
+ const dispatch = useDispatch();
+  
 
   const uploadPreset = "uploads_cloud";
   const cloudName = "durevuy5x";
@@ -35,7 +39,7 @@ console.log(formData);
         formDataUpload 
       );
 
-      console.log(res.data);
+      
       const imageUrl = res.data.secure_url;
        setFormData((prev) => ({
       ...prev,
@@ -48,24 +52,60 @@ console.log(formData);
       alert("Image upload failed!");
     }
   };
+  
+  const handleChange=(e)=>{
+     setFormData((prev) => ({
+    ...prev,
+    [e.target.id]: e.target.value,
+  }));
+  }
 
+  const handleSubmit = async(e)=>{
+    e.preventDefault();
+    try{
+       dispatch(updateUserStart());
+       
+       const res = await fetch(`/api/user/update/${currentUser._id}`,
+      {
+         method: 'POST',
+         headers: {
+          'Content-Type' : 'application/json',
+         },
+         body:JSON.stringify(formData),
+         credentials: 'include',
+       })
+       const data = await res.json();
+       if(data.success === false){
+        dispatch(updateUserFailure(data.message));
+        return;
+       }
+       dispatch(updateUserSuccess(data));
+       setUpdateSuccess(true);
+    }catch(error){
+      dispatch(updateUserFailure(error.message));
+    }
+  }
   return (
    <div className='p-3 max-w-lg mx-auto'>
     <h1 className='text-3xl font-semibold text-center my-7'>
       Profile</h1>
-   <form className='flex flex-col gap-4'>
+   <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
     <input type="file" ref={fileRef} hidden accept='image/*' onChange={handleImageChange}/>
    <img onClick={()=>fileRef.current.click()} src={formData.avatar? (formData.avatar) : (currentUser.avatar)} alt="Profile" className='rounded-full h-24 w-24 object-cover cursor-pointer self-center mt-2' />
-   <input type="text" placeholder='username' id='username' className='border p-3 rounded-lg bg-white border-none' />
-   <input type="text" placeholder='email' id='email' className='border p-3 rounded-lg bg-white border-none' />
-   <input type="text" placeholder='password' id='password' className='border p-3 rounded-lg bg-white border-none' />
+   <input type="text" defaultValue={currentUser.username} placeholder='username' id='username' className='border p-3 rounded-lg bg-white border-none' onChange={handleChange}/>
+   <input type="text" defaultValue={currentUser.email} placeholder='email' id='email' className='border p-3 rounded-lg bg-white border-none' onChange={handleChange} />
+   <input type="password" placeholder='password' id='password' className='border p-3 rounded-lg bg-white border-none' onChange={handleChange} />
 
-   <button className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'>Update</button>
+   <button disabled={loading} className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'>
+    {loading? 'Loading...': 'Update'}
+    </button>
    </form>
    <div className='flex justify-between mt-5'>
      <span className='text-red-700 cursor-pointer'>Delete account</span>
      <span className='text-red-700 cursor-pointer'>Sign Out</span>
    </div>
+   <p className='text-red-700 mt-5'>{error ? error: ''}</p>
+   <p className='text-green-700 mt-5'>{updateSuccess ? 'User is updated succesfully !': ''}</p>
    </div>
   )
 }
