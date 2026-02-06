@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import axios from "axios";
  import {deleteUserFailure, deleteUserStart, deleteUserSuccess, signOutUserFailure, signOutUserStart, signOutUserSuccess, updateUserFailure, updateUserStart, updateUserSuccess} from '../redux/user/userSlice'
  import { useDispatch } from 'react-redux';
+ import {Link} from 'react-router-dom'
 
 // cloudinary.v2.config({
 //   cloud_name: 'durevuy5x',
@@ -130,9 +131,12 @@ dispatch(signOutUserSuccess(data));
    <input type="text" defaultValue={currentUser.email} placeholder='email' id='email' className='border p-3 rounded-lg bg-white border-none' onChange={handleChange} />
    <input type="password" placeholder='password' id='password' className='border p-3 rounded-lg bg-white border-none' onChange={handleChange} />
 
-   <button disabled={loading} className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'>
+   <button disabled={loading} className='bg-slate-700 text-white rounded-lg p-3 uppercase text-center hover:opacity-95 disabled:opacity-80 '>
     {loading? 'Loading...': 'Update'}
     </button>
+    <Link className='bg-green-700 text-white rounded-lg p-3 text-center uppercase hover:opacity-95 disabled:opacity-80' to={"/create-listing"}>
+    Create Listing
+    </Link>
    </form>
    <div className='flex justify-between mt-5'>
      <span onClick={handleDeleteUser} className='text-red-700 cursor-pointer'>Delete account</span>
