@@ -195,16 +195,18 @@ dispatch(signOutUserSuccess(data));
         className='h-16 w-16 object-contain rounded-lg'
         />
         </Link>
-        <Link className='test-slate-700 font-semibold  truncate flex-1' to={`/listin/${listing._id}`}>
+        <Link className='test-slate-700 font-semibold  truncate flex-1' to={`/listing/${listing._id}`}>
         <p>{listing.name}</p>
         </Link>
         <div className='flex flex-col items-center'>
             <button onClick={()=>handleListingDelete(listing._id)} className='text-red-700 uppercase'>
               Delete
             </button>
+            <Link to={`/update-listing/${listing._id}`}>
             <button  className='text-green-700 uppercase'>
               Edit
             </button>
+            </Link>
         </div>
      </div>
    ))}
